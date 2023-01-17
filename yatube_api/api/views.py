@@ -1,24 +1,18 @@
-from posts.models import Group, Post
 from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
 
-from .permissions import isAuthorOrReadOnly
+from .permissions import IsAuthorOrReadOnly
 from .serializers import CommentSerializer, GroupSerializer, PostSerializer
+from posts.models import Group, Post
 
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    permission_classes = [isAuthorOrReadOnly, ]
+    permission_classes = [IsAuthorOrReadOnly]
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-
-    def perform_update(self, serializer):
-        super(PostViewSet, self).perform_update(serializer)
-
-    def perform_destroy(self, serializer):
-        super(PostViewSet, self).perform_destroy(serializer)
 
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
@@ -28,7 +22,7 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = [isAuthorOrReadOnly, ]
+    permission_classes = [IsAuthorOrReadOnly]
 
     def _get_post(self):
         return get_object_or_404(Post, pk=self.kwargs.get('post_id'))
@@ -39,9 +33,3 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, post=self._get_post())
-
-    def perform_update(self, serializer):
-        super(CommentViewSet, self).perform_update(serializer)
-
-    def perform_destroy(self, serializer):
-        super(CommentViewSet, self).perform_destroy(serializer)
